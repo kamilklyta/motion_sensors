@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 import 'package:motion_sensors/motion_sensors.dart';
+import 'package:rxdart/rxdart.dart';
 
 void main() {
   runApp(MyApp());
@@ -12,70 +13,49 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Vector3 _accelerometer = Vector3.zero();
-  Vector3 _gyroscope = Vector3.zero();
-  Vector3 _magnetometer = Vector3.zero();
-  Vector3 _userAaccelerometer = Vector3.zero();
-  Vector3 _orientation = Vector3.zero();
-  Vector3 _absoluteOrientation = Vector3.zero();
-  Vector3 _absoluteOrientation2 = Vector3.zero();
-  double? _screenOrientation = 0;
-
-  int? _groupValue = 0;
+  int _gyroscopeFrequency = 0;
+  int _accelerometerFrequency = 0;
+  int _userAccelerometerFrequency = 0;
+  int _magnetometerFrequency = 0;
+  int? _groupValue = null;
 
   @override
   void initState() {
     super.initState();
-    motionSensors.gyroscope.listen((GyroscopeEvent event) {
+    setUpdateInterval(0, Duration.microsecondsPerSecond ~/ 1);
+    motionSensors.gyroscope
+        .bufferTime(const Duration(seconds: 1))
+        .listen((List<GyroscopeEvent> events) {
       setState(() {
-        _gyroscope.setValues(event.x, event.y, event.z);
+        _gyroscopeFrequency = events.length;
       });
     });
-    motionSensors.accelerometer.listen((AccelerometerEvent event) {
-      setState(() {
-        _accelerometer.setValues(event.x, event.y, event.z);
-      });
+    motionSensors.gyroscope.listen((event) {
+      print("gyroscope timestamp: ${event.timestamp}");
     });
-    motionSensors.userAccelerometer.listen((UserAccelerometerEvent event) {
-      setState(() {
-        _userAaccelerometer.setValues(event.x, event.y, event.z);
-      });
-    });
-    motionSensors.magnetometer.listen((MagnetometerEvent event) {
-      setState(() {
-        _magnetometer.setValues(event.x, event.y, event.z);
-        var matrix = motionSensors.getRotationMatrix(_accelerometer, _magnetometer);
-        _absoluteOrientation2.setFrom(motionSensors.getOrientation(matrix));
-      });
-    });
-    motionSensors.isOrientationAvailable().then((available) {
-      if (available) {
-        motionSensors.orientation.listen((OrientationEvent event) {
-          setState(() {
-            _orientation.setValues(event.yaw, event.pitch, event.roll);
-          });
-        });
-      }
-    });
-    motionSensors.absoluteOrientation.listen((AbsoluteOrientationEvent event) {
-      setState(() {
-        _absoluteOrientation.setValues(event.yaw, event.pitch, event.roll);
-      });
-    });
-    motionSensors.screenOrientation.listen((ScreenOrientationEvent event) {
-      setState(() {
-        _screenOrientation = event.angle;
-      });
-    });
+    // motionSensors.accelerometer
+    //     .bufferTime(const Duration(seconds: 1))
+    //     .listen((List<AccelerometerEvent> events) {
+    //   _accelerometerFrequency = events.length;
+    // });
+    // motionSensors.userAccelerometer
+    //     .bufferTime(const Duration(seconds: 1))
+    //     .listen((List<UserAccelerometerEvent> events) {
+    //   _userAccelerometerFrequency = events.length;
+    // });
+    // motionSensors.magnetometer
+    //     .bufferTime(const Duration(seconds: 1))
+    //     .listen((List<MagnetometerEvent> events) {
+    //   _magnetometerFrequency = events.length;
+    // });
   }
 
   void setUpdateInterval(int? groupValue, int interval) {
+    print("interval: $interval");
     motionSensors.accelerometerUpdateInterval = interval;
     motionSensors.userAccelerometerUpdateInterval = interval;
     motionSensors.gyroscopeUpdateInterval = interval;
     motionSensors.magnetometerUpdateInterval = interval;
-    motionSensors.orientationUpdateInterval = interval;
-    motionSensors.absoluteOrientationUpdateInterval = interval;
     setState(() {
       _groupValue = groupValue;
     });
@@ -99,92 +79,38 @@ class _MyAppState extends State<MyApp> {
                   Radio(
                     value: 1,
                     groupValue: _groupValue,
-                    onChanged: (dynamic value) => setUpdateInterval(value, Duration.microsecondsPerSecond ~/ 1),
+                    onChanged: (dynamic value) => setUpdateInterval(
+                        value, Duration.microsecondsPerSecond ~/ 1),
                   ),
                   Text("1 FPS"),
                   Radio(
                     value: 2,
                     groupValue: _groupValue,
-                    onChanged: (dynamic value) => setUpdateInterval(value, Duration.microsecondsPerSecond ~/ 30),
+                    onChanged: (dynamic value) => setUpdateInterval(
+                        value, Duration.microsecondsPerSecond ~/ 30),
                   ),
                   Text("30 FPS"),
                   Radio(
                     value: 3,
                     groupValue: _groupValue,
-                    onChanged: (dynamic value) => setUpdateInterval(value, Duration.microsecondsPerSecond ~/ 60),
+                    onChanged: (dynamic value) => setUpdateInterval(
+                        value, Duration.microsecondsPerSecond ~/ 60),
                   ),
                   Text("60 FPS"),
                 ],
               ),
-              Text('Accelerometer'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('${_accelerometer.x.toStringAsFixed(4)}'),
-                  Text('${_accelerometer.y.toStringAsFixed(4)}'),
-                  Text('${_accelerometer.z.toStringAsFixed(4)}'),
-                ],
+              ListTile(
+                title: Text('Gyroscope: ${_gyroscopeFrequency}Hz'),
               ),
-              Text('Magnetometer'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('${_magnetometer.x.toStringAsFixed(4)}'),
-                  Text('${_magnetometer.y.toStringAsFixed(4)}'),
-                  Text('${_magnetometer.z.toStringAsFixed(4)}'),
-                ],
+              ListTile(
+                title: Text(
+                    'User accelerometer: ${_userAccelerometerFrequency}Hz'),
               ),
-              Text('Gyroscope'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('${_gyroscope.x.toStringAsFixed(4)}'),
-                  Text('${_gyroscope.y.toStringAsFixed(4)}'),
-                  Text('${_gyroscope.z.toStringAsFixed(4)}'),
-                ],
+              ListTile(
+                title: Text('Magnetometer: ${_magnetometerFrequency}Hz'),
               ),
-              Text('User Accelerometer'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('${_userAaccelerometer.x.toStringAsFixed(4)}'),
-                  Text('${_userAaccelerometer.y.toStringAsFixed(4)}'),
-                  Text('${_userAaccelerometer.z.toStringAsFixed(4)}'),
-                ],
-              ),
-              Text('Orientation'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('${degrees(_orientation.x).toStringAsFixed(4)}'),
-                  Text('${degrees(_orientation.y).toStringAsFixed(4)}'),
-                  Text('${degrees(_orientation.z).toStringAsFixed(4)}'),
-                ],
-              ),
-              Text('Absolute Orientation'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('${degrees(_absoluteOrientation.x).toStringAsFixed(4)}'),
-                  Text('${degrees(_absoluteOrientation.y).toStringAsFixed(4)}'),
-                  Text('${degrees(_absoluteOrientation.z).toStringAsFixed(4)}'),
-                ],
-              ),
-              Text('Orientation (accelerometer + magnetometer)'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('${degrees(_absoluteOrientation2.x).toStringAsFixed(4)}'),
-                  Text('${degrees(_absoluteOrientation2.y).toStringAsFixed(4)}'),
-                  Text('${degrees(_absoluteOrientation2.z).toStringAsFixed(4)}'),
-                ],
-              ),
-              Text('Screen Orientation'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text('${_screenOrientation!.toStringAsFixed(4)}'),
-                ],
+              ListTile(
+                title: Text('Accelerometer: ${_accelerometerFrequency}Hz'),
               ),
             ],
           ),

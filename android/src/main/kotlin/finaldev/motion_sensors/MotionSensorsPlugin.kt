@@ -7,13 +7,14 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.view.Surface
 import android.view.WindowManager
-import androidx.annotation.NonNull;
+import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry.Registrar
+
 
 // translate from https://github.com/flutter/plugins/tree/master/packages/sensors
 /** MotionSensorsPlugin */
@@ -152,8 +153,12 @@ class StreamHandlerImpl(private val sensorManager: SensorManager, sensorType: In
   }
 
   override fun onSensorChanged(event: SensorEvent?) {
-    val sensorValues = listOf(event!!.values[0], event.values[1], event.values[2])
-    eventSink?.success(sensorValues)
+    val map = HashMap<String, Any>();
+    map["timestamp"] = event!!.timestamp / 1000000; /// convert nanoseconds to milliseconds
+    map["x"] = event!!.values[0];
+    map["y"] = event!!.values[1];
+    map["z"] = event!!.values[2];
+    eventSink?.success(map);
   }
 
   fun setUpdateInterval(interval: Int) {

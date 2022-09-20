@@ -25,7 +25,7 @@ public class SwiftMotionSensorsPlugin: NSObject, FlutterPlugin {
         let instance = SwiftMotionSensorsPlugin(registrar: registrar)
         let channel = FlutterMethodChannel(name: METHOD_CHANNEL_NAME, binaryMessenger: registrar.messenger())
         registrar.addMethodCallDelegate(instance, channel: channel)
-
+        
     }
     
     init(registrar: FlutterPluginRegistrar) {
@@ -36,7 +36,7 @@ public class SwiftMotionSensorsPlugin: NSObject, FlutterPlugin {
         let ORIENTATION_CHANNEL_NAME = "motion_sensors/orientation"
         let ABSOLUTE_ORIENTATION_CHANNEL_NAME = "motion_sensors/absolute_orientation"
         let SCREEN_ORIENTATION_CHANNEL_NAME = "motion_sensors/screen_orientation"
-
+        
         let accelerometerChannel = FlutterEventChannel(name: ACCELEROMETER_CHANNEL_NAME, binaryMessenger: registrar.messenger())
         accelerometerChannel.setStreamHandler(accelerometerStreamHandler)
         
@@ -51,10 +51,10 @@ public class SwiftMotionSensorsPlugin: NSObject, FlutterPlugin {
         
         let orientationChannel = FlutterEventChannel(name: ORIENTATION_CHANNEL_NAME, binaryMessenger: registrar.messenger())
         orientationChannel.setStreamHandler(orientationStreamHandler)
-
+        
         let absoluteOrientationChannel = FlutterEventChannel(name: ABSOLUTE_ORIENTATION_CHANNEL_NAME, binaryMessenger: registrar.messenger())
         absoluteOrientationChannel.setStreamHandler(absoluteOrientationStreamHandler)
-
+        
         let screenOrientationChannel = FlutterEventChannel(name: SCREEN_ORIENTATION_CHANNEL_NAME, binaryMessenger: registrar.messenger())
         screenOrientationChannel.setStreamHandler(ScreenOrientationStreamHandler())
     }
@@ -156,7 +156,7 @@ class UserAccelerometerStreamHandler: NSObject, FlutterStreamHandler {
         motionManager.stopDeviceMotionUpdates()
         return nil
     }
-
+    
     func setUpdateInterval(_ interval: TimeInterval) {
         motionManager.deviceMotionUpdateInterval = interval
     }
@@ -170,7 +170,12 @@ class GyroscopeStreamHandler: NSObject, FlutterStreamHandler {
         if motionManager.isGyroAvailable {
             motionManager.startGyroUpdates(to: queue) { (data, error) in
                 if data != nil {
-                    events([data!.rotationRate.x, data!.rotationRate.y, data!.rotationRate.z])
+                    var event: [String: Any] = [:]
+                    event["timestamp"] = Int(data!.timestamp * 1000) // convert from seconds to milliseconds
+                    event["x"] = data!.rotationRate.x
+                    event["y"] = data!.rotationRate.y
+                    event["z"] = data!.rotationRate.z
+                    events(event)
                 }
             }
         }
@@ -196,7 +201,12 @@ class MagnetometerStreamHandler: NSObject, FlutterStreamHandler {
             motionManager.showsDeviceMovementDisplay = true
             motionManager.startDeviceMotionUpdates(using: CMAttitudeReferenceFrame.xArbitraryCorrectedZVertical, to: queue) { (data, error) in
                 if data != nil {
-                    events([data!.magneticField.field.x, data!.magneticField.field.y, data!.magneticField.field.z])
+                    var event: [String: Any] = [:]
+                    event["timestamp"] = Int(data!.timestamp * 1000) // convert from seconds to milliseconds;
+                    event["x"] = data!.magneticField.field.x
+                    event["y"] = data!.magneticField.field.y
+                    event["z"] = data!.magneticField.field.z
+                    events(event)
                 }
             }
         }
@@ -217,11 +227,11 @@ class AttitudeStreamHandler: NSObject, FlutterStreamHandler {
     private var attitudeReferenceFrame:  CMAttitudeReferenceFrame
     private let motionManager = CMMotionManager()
     private let queue = OperationQueue()
-
+    
     init(_ referenceFrame: CMAttitudeReferenceFrame) {
         attitudeReferenceFrame = referenceFrame
     }
-
+    
     func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         if motionManager.isDeviceMotionAvailable {
             motionManager.showsDeviceMovementDisplay = true
@@ -252,7 +262,7 @@ class AttitudeStreamHandler: NSObject, FlutterStreamHandler {
 
 class ScreenOrientationStreamHandler: NSObject, FlutterStreamHandler {
     private var eventSink:  FlutterEventSink?
-
+    
     func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         eventSink = events
         NotificationCenter.default.addObserver(self, selector: #selector(orientationChanged), name: UIDevice.orientationDidChangeNotification, object: nil)
