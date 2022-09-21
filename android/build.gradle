@@ -1,4 +1,4 @@
-group 'finaldev.motion_sensors'
+group 'finaldev.ambient_sensors'
 version '1.0-SNAPSHOT'
 
 buildscript {

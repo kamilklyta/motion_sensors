@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-final MotionSensors motionSensors = MotionSensors();
-const MethodChannel _methodChannel = MethodChannel('motion_sensors/method');
+final AmbientSensors ambientSensors = AmbientSensors();
+const MethodChannel _methodChannel = MethodChannel('ambient_sensors/method');
 const EventChannel _accelerometerEventChannel =
-    EventChannel('motion_sensors/accelerometer');
+    EventChannel('ambient_sensors/accelerometer');
 const EventChannel _gyroscopeEventChannel =
-    EventChannel('motion_sensors/gyroscope');
+    EventChannel('ambient_sensors/gyroscope');
 const EventChannel _magnetometerEventChannel =
-    EventChannel('motion_sensors/magnetometer');
+    EventChannel('ambient_sensors/magnetometer');
 const EventChannel _userAccelerometerEventChannel =
-    EventChannel('motion_sensors/user_accelerometer');
+    EventChannel('ambient_sensors/user_accelerometer');
 
 /// Discrete reading from an accelerometer. Accelerometers measure the velocity
 /// of the device. Note that these readings include the effects of gravity. Put
@@ -151,10 +151,11 @@ class UserAccelerometerEvent {
   final double z;
 
   @override
-  String toString() => 'UserAccelerometerEvent($timestamp, x: $x, y: $y, z: $z)';
+  String toString() =>
+      'UserAccelerometerEvent($timestamp, x: $x, y: $y, z: $z)';
 }
 
-class MotionSensors {
+class AmbientSensors {
   Stream<AccelerometerEvent>? _accelerometerEvents;
   Stream<GyroscopeEvent>? _gyroscopeEvents;
   Stream<UserAccelerometerEvent>? _userAccelerometerEvents;

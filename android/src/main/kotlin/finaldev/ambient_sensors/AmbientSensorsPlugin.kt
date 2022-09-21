@@ -1,4 +1,4 @@
-package finaldev.motion_sensors
+package finaldev.ambient_sensors
 
 import android.content.Context
 import android.hardware.Sensor
@@ -16,14 +16,13 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 
-// translate from https://github.com/flutter/plugins/tree/master/packages/sensors
-/** MotionSensorsPlugin */
-public class MotionSensorsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
-    private val METHOD_CHANNEL_NAME = "motion_sensors/method"
-    private val ACCELEROMETER_CHANNEL_NAME = "motion_sensors/accelerometer"
-    private val GYROSCOPE_CHANNEL_NAME = "motion_sensors/gyroscope"
-    private val MAGNETOMETER_CHANNEL_NAME = "motion_sensors/magnetometer"
-    private val USER_ACCELEROMETER_CHANNEL_NAME = "motion_sensors/user_accelerometer"
+/** AmbientSensorsPlugin */
+public class AmbientSensorsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
+    private val METHOD_CHANNEL_NAME = "ambient_sensors/method"
+    private val ACCELEROMETER_CHANNEL_NAME = "ambient_sensors/accelerometer"
+    private val GYROSCOPE_CHANNEL_NAME = "ambient_sensors/gyroscope"
+    private val MAGNETOMETER_CHANNEL_NAME = "ambient_sensors/magnetometer"
+    private val USER_ACCELEROMETER_CHANNEL_NAME = "ambient_sensors/user_accelerometer"
 
     private var sensorManager: SensorManager? = null
     private var methodChannel: MethodChannel? = null
@@ -41,7 +40,7 @@ public class MotionSensorsPlugin : FlutterPlugin, MethodChannel.MethodCallHandle
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val plugin = MotionSensorsPlugin()
+            val plugin = AmbientSensorsPlugin()
             plugin.setupEventChannels(registrar.context(), registrar.messenger())
         }
     }

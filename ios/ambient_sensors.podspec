@@ -1,9 +1,9 @@
 #
 # To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html.
-# Run `pod lib lint motion_sensors.podspec' to validate before publishing.
+# Run `pod lib lint ambient_sensors.podspec' to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'motion_sensors'
+  s.name             = 'ambient_sensors'
   s.version          = '0.0.1'
   s.summary          = 'Flutter plugin for accessing the Android and iOS accelerometer gyroscope and magnetometer sensors.'
   s.description      = <<-DESC

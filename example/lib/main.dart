@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:motion_sensors/motion_sensors.dart';
+import 'package:ambient_sensors/ambient_sensors.dart';
 import 'package:rxdart/rxdart.dart';
 
 void main() {
@@ -25,24 +25,24 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     setUpdateInterval(1, Duration.microsecondsPerSecond ~/ 1);
-    motionSensors.gyroscope
+    ambientSensors.gyroscope
         .bufferTime(const Duration(seconds: 1))
         .listen((List<GyroscopeEvent> events) {
       setState(() {
         _gyroscopeFrequency = events.length;
       });
     });
-    motionSensors.accelerometer
+    ambientSensors.accelerometer
         .bufferTime(const Duration(seconds: 1))
         .listen((List<AccelerometerEvent> events) {
       _accelerometerFrequency = events.length;
     });
-    motionSensors.userAccelerometer
+    ambientSensors.userAccelerometer
         .bufferTime(const Duration(seconds: 1))
         .listen((List<UserAccelerometerEvent> events) {
       _userAccelerometerFrequency = events.length;
     });
-    motionSensors.magnetometer
+    ambientSensors.magnetometer
         .bufferTime(const Duration(seconds: 1))
         .listen((List<MagnetometerEvent> events) {
       _magnetometerFrequency = events.length;
@@ -50,10 +50,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   void setUpdateInterval(int? groupValue, int interval) {
-    motionSensors.accelerometerUpdateInterval = interval;
-    motionSensors.userAccelerometerUpdateInterval = interval;
-    motionSensors.gyroscopeUpdateInterval = interval;
-    motionSensors.magnetometerUpdateInterval = interval;
+    ambientSensors.accelerometerUpdateInterval = interval;
+    ambientSensors.userAccelerometerUpdateInterval = interval;
+    ambientSensors.gyroscopeUpdateInterval = interval;
+    ambientSensors.magnetometerUpdateInterval = interval;
     setState(() {
       _groupValue = groupValue;
     });

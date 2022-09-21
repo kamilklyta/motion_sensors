@@ -9,26 +9,25 @@ let TYPE_GYROSCOPE = 4
 let TYPE_USER_ACCELEROMETER = 10
 
 
-// translate from https://github.com/flutter/plugins/tree/master/packages/sensors
-public class SwiftMotionSensorsPlugin: NSObject, FlutterPlugin {
+public class SwiftAmbientSensorsPlugin: NSObject, FlutterPlugin {
     private let accelerometerStreamHandler = AccelerometerStreamHandler()
     private let magnetometerStreamHandler = MagnetometerStreamHandler()
     private let gyroscopeStreamHandler = GyroscopeStreamHandler()
     private let userAccelerometerStreamHandler = UserAccelerometerStreamHandler()
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let METHOD_CHANNEL_NAME = "motion_sensors/method"
-        let instance = SwiftMotionSensorsPlugin(registrar: registrar)
+        let METHOD_CHANNEL_NAME = "ambient_sensors/method"
+        let instance = SwiftAmbientSensorsPlugin(registrar: registrar)
         let channel = FlutterMethodChannel(name: METHOD_CHANNEL_NAME, binaryMessenger: registrar.messenger())
         registrar.addMethodCallDelegate(instance, channel: channel)
         
     }
     
     init(registrar: FlutterPluginRegistrar) {
-        let ACCELEROMETER_CHANNEL_NAME = "motion_sensors/accelerometer"
-        let MAGNETOMETER_CHANNEL_NAME = "motion_sensors/magnetometer"
-        let GYROSCOPE_CHANNEL_NAME = "motion_sensors/gyroscope"
-        let USER_ACCELEROMETER_CHANNEL_NAME = "motion_sensors/user_accelerometer"
+        let ACCELEROMETER_CHANNEL_NAME = "ambient_sensors/accelerometer"
+        let MAGNETOMETER_CHANNEL_NAME = "ambient_sensors/magnetometer"
+        let GYROSCOPE_CHANNEL_NAME = "ambient_sensors/gyroscope"
+        let USER_ACCELEROMETER_CHANNEL_NAME = "ambient_sensors/user_accelerometer"
         
         let accelerometerChannel = FlutterEventChannel(name: ACCELEROMETER_CHANNEL_NAME, binaryMessenger: registrar.messenger())
         accelerometerChannel.setStreamHandler(accelerometerStreamHandler)
