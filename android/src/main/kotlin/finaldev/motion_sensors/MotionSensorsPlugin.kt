@@ -24,9 +24,6 @@ public class MotionSensorsPlugin : FlutterPlugin, MethodChannel.MethodCallHandle
     private val GYROSCOPE_CHANNEL_NAME = "motion_sensors/gyroscope"
     private val MAGNETOMETER_CHANNEL_NAME = "motion_sensors/magnetometer"
     private val USER_ACCELEROMETER_CHANNEL_NAME = "motion_sensors/user_accelerometer"
-    private val ORIENTATION_CHANNEL_NAME = "motion_sensors/orientation"
-    private val ABSOLUTE_ORIENTATION_CHANNEL_NAME = "motion_sensors/absolute_orientation"
-    private val SCREEN_ORIENTATION_CHANNEL_NAME = "motion_sensors/screen_orientation"
 
     private var sensorManager: SensorManager? = null
     private var methodChannel: MethodChannel? = null
@@ -34,18 +31,12 @@ public class MotionSensorsPlugin : FlutterPlugin, MethodChannel.MethodCallHandle
     private var gyroscopeChannel: EventChannel? = null
     private var magnetometerChannel: EventChannel? = null
     private var userAccelerometerChannel: EventChannel? = null
-    private var orientationChannel: EventChannel? = null
-    private var absoluteOrientationChannel: EventChannel? = null
-    private var screenOrientationChannel: EventChannel? = null
 
 
     private var accelerationStreamHandler: StreamHandlerImpl? = null
     private var gyroScopeStreamHandler: StreamHandlerImpl? = null
     private var magnetometerStreamHandler: StreamHandlerImpl? = null
     private var userAccelerationStreamHandler: StreamHandlerImpl? = null
-    private var orientationStreamHandler: RotationVectorStreamHandler? = null
-    private var absoluteOrientationStreamHandler: RotationVectorStreamHandler? = null
-    private var screenOrientationStreamHandler: ScreenOrientationStreamHandler? = null
 
     companion object {
         @JvmStatic
@@ -100,21 +91,6 @@ public class MotionSensorsPlugin : FlutterPlugin, MethodChannel.MethodCallHandle
         magnetometerChannel = EventChannel(messenger, MAGNETOMETER_CHANNEL_NAME)
         magnetometerStreamHandler = StreamHandlerImpl(sensorManager!!, Sensor.TYPE_MAGNETIC_FIELD)
         magnetometerChannel!!.setStreamHandler(magnetometerStreamHandler!!)
-
-        orientationChannel = EventChannel(messenger, ORIENTATION_CHANNEL_NAME)
-        orientationStreamHandler =
-            RotationVectorStreamHandler(sensorManager!!, Sensor.TYPE_GAME_ROTATION_VECTOR)
-        orientationChannel!!.setStreamHandler(orientationStreamHandler!!)
-
-        absoluteOrientationChannel = EventChannel(messenger, ABSOLUTE_ORIENTATION_CHANNEL_NAME)
-        absoluteOrientationStreamHandler =
-            RotationVectorStreamHandler(sensorManager!!, Sensor.TYPE_ROTATION_VECTOR)
-        absoluteOrientationChannel!!.setStreamHandler(absoluteOrientationStreamHandler!!)
-
-        screenOrientationChannel = EventChannel(messenger, SCREEN_ORIENTATION_CHANNEL_NAME)
-        screenOrientationStreamHandler =
-            ScreenOrientationStreamHandler(context, sensorManager!!, Sensor.TYPE_ACCELEROMETER)
-        screenOrientationChannel!!.setStreamHandler(screenOrientationStreamHandler)
     }
 
     private fun teardownEventChannels() {
@@ -123,9 +99,6 @@ public class MotionSensorsPlugin : FlutterPlugin, MethodChannel.MethodCallHandle
         userAccelerometerChannel!!.setStreamHandler(null)
         gyroscopeChannel!!.setStreamHandler(null)
         magnetometerChannel!!.setStreamHandler(null)
-        orientationChannel!!.setStreamHandler(null)
-        absoluteOrientationChannel!!.setStreamHandler(null)
-        screenOrientationChannel!!.setStreamHandler(null)
     }
 
     private fun setSensorUpdateInterval(sensorType: Int, interval: Int) {
@@ -134,12 +107,6 @@ public class MotionSensorsPlugin : FlutterPlugin, MethodChannel.MethodCallHandle
             Sensor.TYPE_MAGNETIC_FIELD -> magnetometerStreamHandler!!.setUpdateInterval(interval)
             Sensor.TYPE_GYROSCOPE -> gyroScopeStreamHandler!!.setUpdateInterval(interval)
             Sensor.TYPE_LINEAR_ACCELERATION -> userAccelerationStreamHandler!!.setUpdateInterval(
-                interval
-            )
-            Sensor.TYPE_GAME_ROTATION_VECTOR -> orientationStreamHandler!!.setUpdateInterval(
-                interval
-            )
-            Sensor.TYPE_ROTATION_VECTOR -> absoluteOrientationStreamHandler!!.setUpdateInterval(
                 interval
             )
         }
@@ -167,9 +134,7 @@ class StreamHandlerImpl(
         eventSink = null
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-
-    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     override fun onSensorChanged(event: SensorEvent?) {
         val map = HashMap<String, Any>();
@@ -185,103 +150,6 @@ class StreamHandlerImpl(
         if (eventSink != null) {
             sensorManager.unregisterListener(this)
             sensorManager.registerListener(this, sensor, interval)
-        }
-    }
-}
-
-class RotationVectorStreamHandler(
-    private val sensorManager: SensorManager,
-    sensorType: Int,
-    private var interval: Int = SensorManager.SENSOR_DELAY_NORMAL
-) :
-    EventChannel.StreamHandler, SensorEventListener {
-    private val sensor = sensorManager.getDefaultSensor(sensorType)
-    private var eventSink: EventChannel.EventSink? = null
-
-    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-        if (sensor != null) {
-            eventSink = events
-            sensorManager.registerListener(this, sensor, interval)
-        }
-    }
-
-    override fun onCancel(arguments: Any?) {
-        sensorManager.unregisterListener(this)
-        eventSink = null
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        var matrix = FloatArray(9)
-        SensorManager.getRotationMatrixFromVector(matrix, event!!.values)
-        if (matrix[7] > 1.0f) matrix[7] = 1.0f
-        if (matrix[7] < -1.0f) matrix[7] = -1.0f
-        var orientation = FloatArray(3)
-        SensorManager.getOrientation(matrix, orientation)
-        val sensorValues = listOf(-orientation[0], -orientation[1], orientation[2])
-        eventSink?.success(sensorValues)
-    }
-
-    fun setUpdateInterval(interval: Int) {
-        this.interval = interval
-        if (eventSink != null) {
-            sensorManager.unregisterListener(this)
-            sensorManager.registerListener(this, sensor, interval)
-        }
-    }
-}
-
-class ScreenOrientationStreamHandler(
-    private val context: Context,
-    private val sensorManager: SensorManager,
-    sensorType: Int,
-    private var interval: Int = SensorManager.SENSOR_DELAY_NORMAL
-) :
-    EventChannel.StreamHandler, SensorEventListener {
-    private val sensor = sensorManager.getDefaultSensor(sensorType)
-    private var eventSink: EventChannel.EventSink? = null
-    private var lastRotation: Double = -1.0
-
-    override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-        eventSink = events
-        sensorManager.registerListener(this, sensor, interval)
-    }
-
-    override fun onCancel(arguments: Any?) {
-        sensorManager.unregisterListener(this)
-        eventSink = null
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        val rotation = getScreenOrientation()
-        if (rotation != lastRotation) {
-            eventSink?.success(rotation)
-            lastRotation = rotation
-        }
-    }
-
-    fun setUpdateInterval(interval: Int) {
-        this.interval = interval
-        if (eventSink != null) {
-            sensorManager.unregisterListener(this)
-            sensorManager.registerListener(this, sensor, interval)
-        }
-    }
-
-    private fun getScreenOrientation(): Double {
-        return when ((context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation) {
-            Surface.ROTATION_0 -> 0.0
-            Surface.ROTATION_90 -> 90.0
-            Surface.ROTATION_180 -> 180.0
-            Surface.ROTATION_270 -> -90.0
-            else -> 0.0
         }
     }
 }
