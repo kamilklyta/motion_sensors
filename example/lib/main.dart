@@ -17,36 +17,45 @@ class _MyAppState extends State<MyApp> {
   int _accelerometerFrequency = 0;
   int _userAccelerometerFrequency = 0;
   int _magnetometerFrequency = 0;
-  int? _groupValue = null;
+  int? _groupValue = 0;
 
   @override
   void initState() {
+    print("INIT");
     super.initState();
     setUpdateInterval(0, Duration.microsecondsPerSecond ~/ 1);
-    motionSensors.gyroscope
-        .bufferTime(const Duration(seconds: 1))
-        .listen((List<GyroscopeEvent> events) {
-      setState(() {
-        _gyroscopeFrequency = events.length;
+    try {
+      motionSensors.gyroscope
+          .bufferTime(const Duration(seconds: 1))
+          .listen((List<GyroscopeEvent> events) {
+        setState(() {
+          _gyroscopeFrequency = events.length;
+        });
       });
+      motionSensors.gyroscope.listen((event) {
+        print("gyroscope timestamp: ${event.timestamp}");
+      });
+      print("NO");
+    } catch (err) {
+      print("ERR: $err");
+    }
+    motionSensors.accelerometer
+        .bufferTime(const Duration(seconds: 1))
+        .listen((List<AccelerometerEvent> events) {
+      _accelerometerFrequency = events.length;
     });
-    motionSensors.gyroscope.listen((event) {
-      print("gyroscope timestamp: ${event.timestamp}");
+    motionSensors.userAccelerometer
+        .bufferTime(const Duration(seconds: 1))
+        .listen((List<UserAccelerometerEvent> events) {
+      _userAccelerometerFrequency = events.length;
     });
-    // motionSensors.accelerometer
-    //     .bufferTime(const Duration(seconds: 1))
-    //     .listen((List<AccelerometerEvent> events) {
-    //   _accelerometerFrequency = events.length;
-    // });
-    // motionSensors.userAccelerometer
-    //     .bufferTime(const Duration(seconds: 1))
-    //     .listen((List<UserAccelerometerEvent> events) {
-    //   _userAccelerometerFrequency = events.length;
-    // });
-    // motionSensors.magnetometer
-    //     .bufferTime(const Duration(seconds: 1))
-    //     .listen((List<MagnetometerEvent> events) {
-    //   _magnetometerFrequency = events.length;
+    motionSensors.magnetometer
+        .bufferTime(const Duration(seconds: 1))
+        .listen((List<MagnetometerEvent> events) {
+      _magnetometerFrequency = events.length;
+    });
+    // motionSensors.isGyroscopeAvailable().then((value) {
+    //   print("PRINT: $value");
     // });
   }
 
