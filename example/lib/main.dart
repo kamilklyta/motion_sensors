@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math_64.dart' hide Colors;
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:rxdart/rxdart.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -17,28 +18,20 @@ class _MyAppState extends State<MyApp> {
   int _accelerometerFrequency = 0;
   int _userAccelerometerFrequency = 0;
   int _magnetometerFrequency = 0;
-  int? _groupValue = 0;
+  int? _groupValue = 1;
 
   @override
   void initState() {
-    print("INIT");
     super.initState();
-    setUpdateInterval(0, Duration.microsecondsPerSecond ~/ 1);
-    try {
-      motionSensors.gyroscope
-          .bufferTime(const Duration(seconds: 1))
-          .listen((List<GyroscopeEvent> events) {
-        setState(() {
-          _gyroscopeFrequency = events.length;
-        });
+
+    setUpdateInterval(1, Duration.microsecondsPerSecond ~/ 1);
+    motionSensors.gyroscope
+        .bufferTime(const Duration(seconds: 1))
+        .listen((List<GyroscopeEvent> events) {
+      setState(() {
+        _gyroscopeFrequency = events.length;
       });
-      motionSensors.gyroscope.listen((event) {
-        print("gyroscope timestamp: ${event.timestamp}");
-      });
-      print("NO");
-    } catch (err) {
-      print("ERR: $err");
-    }
+    });
     motionSensors.accelerometer
         .bufferTime(const Duration(seconds: 1))
         .listen((List<AccelerometerEvent> events) {
@@ -54,13 +47,9 @@ class _MyAppState extends State<MyApp> {
         .listen((List<MagnetometerEvent> events) {
       _magnetometerFrequency = events.length;
     });
-    // motionSensors.isGyroscopeAvailable().then((value) {
-    //   print("PRINT: $value");
-    // });
   }
 
   void setUpdateInterval(int? groupValue, int interval) {
-    print("interval: $interval");
     motionSensors.accelerometerUpdateInterval = interval;
     motionSensors.userAccelerometerUpdateInterval = interval;
     motionSensors.gyroscopeUpdateInterval = interval;
@@ -81,7 +70,7 @@ class _MyAppState extends State<MyApp> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text('Update Interval'),
+              const Text('Update Interval'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -91,21 +80,21 @@ class _MyAppState extends State<MyApp> {
                     onChanged: (dynamic value) => setUpdateInterval(
                         value, Duration.microsecondsPerSecond ~/ 1),
                   ),
-                  Text("1 FPS"),
+                  const Text("1 FPS"),
                   Radio(
                     value: 2,
                     groupValue: _groupValue,
                     onChanged: (dynamic value) => setUpdateInterval(
                         value, Duration.microsecondsPerSecond ~/ 30),
                   ),
-                  Text("30 FPS"),
+                  const Text("30 FPS"),
                   Radio(
                     value: 3,
                     groupValue: _groupValue,
                     onChanged: (dynamic value) => setUpdateInterval(
                         value, Duration.microsecondsPerSecond ~/ 60),
                   ),
-                  Text("60 FPS"),
+                  const Text("60 FPS"),
                 ],
               ),
               ListTile(

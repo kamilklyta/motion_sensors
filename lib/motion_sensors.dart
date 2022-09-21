@@ -12,7 +12,6 @@ const EventChannel _magnetometerEventChannel =
 const EventChannel _userAccelerometerEventChannel =
     EventChannel('motion_sensors/user_accelerometer');
 
-// from https://github.com/flutter/plugins/tree/master/packages/sensors
 /// Discrete reading from an accelerometer. Accelerometers measure the velocity
 /// of the device. Note that these readings include the effects of gravity. Put
 /// simply, you can use accelerometer readings to tell if the device is moving in
@@ -51,7 +50,7 @@ class AccelerometerEvent {
   final double z;
 
   @override
-  String toString() => 'AccelerometerEvent (x: $x, y: $y, z: $z)';
+  String toString() => 'AccelerometerEvent ($timestamp, x: $x, y: $y, z: $z)';
 }
 
 class MagnetometerEvent {
@@ -70,7 +69,7 @@ class MagnetometerEvent {
   final double y;
   final double z;
   @override
-  String toString() => '[Magnetometer (x: $x, y: $y, z: $z)]';
+  String toString() => '[Magnetometer ($timestamp, x: $x, y: $y, z: $z)]';
 }
 
 /// Discrete reading from a gyroscope. Gyroscopes measure the rate or rotation of
@@ -112,7 +111,7 @@ class GyroscopeEvent {
   final double z;
 
   @override
-  String toString() => 'GyroscopeEvent(x: $x, y: $y, z: $z)';
+  String toString() => 'GyroscopeEvent($timestamp, x: $x, y: $y, z: $z)';
 }
 
 /// Like [AccelerometerEvent], this is a discrete reading from an accelerometer
@@ -152,7 +151,7 @@ class UserAccelerometerEvent {
   final double z;
 
   @override
-  String toString() => 'UserAccelerometerEvent(x: $x, y: $y, z: $z)';
+  String toString() => 'UserAccelerometerEvent($timestamp, x: $x, y: $y, z: $z)';
 }
 
 class MotionSensors {
